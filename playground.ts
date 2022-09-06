@@ -2,14 +2,25 @@ import * as yup from "yup"
 import { AnyObjectSchema, AnySchema } from "yup"
 
 
-const initDatabase = (name = "db", schemas: AnyObjectSchema[]) => { }
-/*
-Day 1 pt 2
-Used yup to create a schema ans generate a TS type as well as Datatypes for SQLite
-It was a pain
-And the way I'm determining if a number field is an integer is kinda jank
+const initDatabase = (name = "db", schemas: AnyObjectSchema[]) => {
+  const table = (name: string) => {
 
-*/
+
+    const insert = (value: any) => { }
+    const update = (primaryKey: number, value: any) => { }
+    const remove = (primaryKey: number) => { }
+
+    return {
+      insert,
+      delete: remove,
+      update
+    }
+  }
+
+  return {
+    table
+  }
+}
 
 const UserSchema = yup.object({
   id: yup.number().integer().required(),
@@ -32,7 +43,16 @@ const ProductSchema = yup.object({
  * @param {AnySchema[]} schemas The schemas to be mapped to tables.
  */
 
-let db = initDatabase("local", [UserSchema, ProductSchema])
+let database = initDatabase("local", [UserSchema, ProductSchema])
+
+// Adding a row
+database.table("users").insert({ firstName: "Theo", lastName: "Taylor", email: "theo@taylord.tech" })
+
+// Updating a row
+database.table("users").update(0, { email: "theotaylor@taylord.tech" })
+
+// Deleting a row
+database.table("users").delete(0)
 
 
 interface Product extends yup.InferType<typeof ProductSchema> {
@@ -77,14 +97,3 @@ Object.keys(ProductSchema.fields).forEach((key) => {
 
   //console.log("SQLite", type)
 })
-
-/*
-
-Day 2
-
-Setup process v0.0.1:
-1 - initialize the db
-2 - generate the schemas
-3 - create the tables
-
-*/
