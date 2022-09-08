@@ -135,12 +135,17 @@ const initializeDatabase = (dbName = "main") => {
       })
     }
 
-    const update = (primaryKey: number, value: any) => {}
+    const update = (primaryKey: number, value: any) => { }
 
-    const remove = (id: number) => {
+    const remove = async (id: number) => {
       const command = `DELETE FROM ${tableName} WHERE id = ?;`
-      sqlDB.transaction((tx) => {
-        tx.executeSql(command, [id])
+      return new Promise((resolve) => {
+        sqlDB.transaction((tx) => {
+          tx.executeSql(command, [id],
+            () => {
+              resolve({ status: "success", data: null })
+            },)
+        })
       })
     }
 
@@ -182,9 +187,19 @@ export default function App() {
     setText("")
   }
 
-  const markAsDone = (id: number) => {}
+  const markAsDone = (id: number) => { }
 
-  const deleteItem = (id: number) => {}
+  const deleteItem = async (id: number) => {
+    try {
+      let result = await itemsTable.delete(id)
+      if (result.status != "success") return
+      result = await itemsTable.select()
+      if (result.status != "success") return
+      setItems(result.data as Item[])
+    } catch (e) {
+      console.log("error", e)
+    }
+  }
 
   useEffect(() => {
     itemsTable
@@ -211,7 +226,11 @@ export default function App() {
       <FlatList
         data={items}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <Text>{item.value}</Text>}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => deleteItem(item.id)} >
+            <Text>{item.value}</Text>
+          </TouchableOpacity>
+        )}
       />
       <StatusBar style="auto" />
     </View>
