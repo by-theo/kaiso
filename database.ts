@@ -12,7 +12,7 @@ type StandardResult = {
 /**
  * Creates or connects the database of the given name with each schema representing a table.
  *
- * @param {string} name The name of the database.
+ * @param {string} name The name of the database. 
  */
 
 const initializeDatabase = (dbName = "main") => {
@@ -47,32 +47,26 @@ const initializeDatabase = (dbName = "main") => {
             command += `, ${key} ${type}`
         })
         command += ");"
-        //console.log(command)
+        console.log(command)
 
         sqlDB.transaction((tx) => {
             tx.executeSql(command)
         })
 
-        type TableType = InferType<typeof schema>
+        //type TableType = InferType<typeof schema>
 
-        const insert = async (value: TableType) => {
+        const insert = async <T extends {}>(value: T) => {
             const valid = await schema.isValid(value)
-            /*
-            if (!valid) {
-              console.log("invalid")
-              return
+
+            if (!valid) throw Error(`${JSON.stringify(value)} is not of the correcttype`)
+
+            function checkForID(column: string) {
+                return column === "id"
             }
-            */
 
             const columns = Object.keys(value)
-            /*const idIndex = columns.findIndex(checkForID)
-            
-            columns.splice(idIndex, 1)
-      
-            function checkForID(column: string) {
-              return column === "id"
-            }
-            */
+            const idIndex = columns.findIndex(checkForID)
+            if (idIndex >= 0) columns.splice(idIndex, 1)
 
             let columnNames = ""
             let columnPlaceholders = ""
@@ -81,12 +75,12 @@ const initializeDatabase = (dbName = "main") => {
             columns.forEach((column, index) => {
                 columnNames += index === 0 ? column : `, ${column}`
                 columnPlaceholders += index === 0 ? "?" : `, ?`
-                columnValues.push(value[column])
+                columnValues.push(value[column as keyof T])
             })
 
-            console.log(value)
+            //console.log(value)
             let command = `INSERT INTO ${tableName} (${columnNames}) VALUES (${columnPlaceholders})`
-            console.log(command)
+            //console.log(command)
 
             return new Promise<StandardResult>((resolve) => {
                 sqlDB.transaction((tx) => {

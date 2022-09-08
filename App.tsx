@@ -32,7 +32,7 @@ export default function App() {
   const [items, setItems] = useState<Item[]>([])
   const add = async () => {
     try {
-      let result = await itemsTable.insert({ value: text, done: false })
+      let result = await itemsTable.insert<Item>({ value: text, done: false, id: 0 })
       if (result.status != "success") return
       result = await itemsTable.select()
       if (result.status != "success") return
