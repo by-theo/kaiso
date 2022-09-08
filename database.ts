@@ -1,8 +1,9 @@
 import * as SQLite from "expo-sqlite"
 import {
-    AnyObjectSchema,
-    //InferType,
+    AnyObjectSchema
 } from "yup"
+
+type Status = "success" | "failure"
 
 type StandardResult = {
     status: "success" | "failure"
@@ -53,8 +54,6 @@ const initializeDatabase = (dbName = "main") => {
             tx.executeSql(command)
         })
 
-        //type TableType = InferType<typeof schema>
-
         const insert = async <T extends {}>(value: T) => {
             const valid = await schema.isValid(value)
 
@@ -78,9 +77,7 @@ const initializeDatabase = (dbName = "main") => {
                 columnValues.push(value[column as keyof T])
             })
 
-            //console.log(value)
             let command = `INSERT INTO ${tableName} (${columnNames}) VALUES (${columnPlaceholders})`
-            //console.log(command)
 
             return new Promise<StandardResult>((resolve) => {
                 sqlDB.transaction((tx) => {
@@ -99,14 +96,14 @@ const initializeDatabase = (dbName = "main") => {
             })
         }
 
-        const select = async () => {
+        const select = async <T>() => {
             const command = `SELECT * FROM ${tableName};`
             return new Promise<StandardResult>((resolve) => {
                 sqlDB.transaction((tx) => {
                     tx.executeSql(
                         command,
                         [],
-                        (_, { rows: { _array } }) => {
+                        (_, { rows: { _array } }: { rows: { _array: T[] } }) => {
                             resolve({ status: "success", data: _array })
                         },
                         () => {
@@ -118,9 +115,33 @@ const initializeDatabase = (dbName = "main") => {
             })
         }
 
-        const update = async (id: number, value: any) => {
-            const command = `UPDATE ${tableName} SET done = 1 WHERE id = ?;`
+        const columns = async <T>(columns: (keyof T)[]) => {
+            let columnStr = ""
+            columns.forEach((column, index) => {
+                columnStr += index === 0 ? column.toString() : `, ${column.toString()}`
+            })
+            const command = `SELECT ${columnStr} FROM ${tableName};`
             return new Promise<StandardResult>((resolve) => {
+                resolve({ data: { done: false }, status: "success" })
+                sqlDB.transaction((tx) => {
+                    tx.executeSql(
+                        command,
+                        [],
+                        (_, { rows: { _array } }: { rows: { _array: T[] } }) => {
+                            resolve({ status: "success", data: _array })
+                        },
+                        () => {
+                            resolve({ status: "failure", data: null })
+                            return false
+                        }
+                    )
+                })
+            })
+        }
+
+        const update = async <T>(id: number, value: T) => {
+            const command = `UPDATE ${tableName} SET done = 1 WHERE id = ?;`
+            return new Promise<{ status: Status, data: T }>((resolve) => {
                 sqlDB.transaction((tx) => {
                     tx.executeSql(
                         command,
@@ -143,6 +164,7 @@ const initializeDatabase = (dbName = "main") => {
         }
 
         return {
+            columns,
             insert,
             delete: remove,
             select,
@@ -157,3 +179,20 @@ const initializeDatabase = (dbName = "main") => {
 
 
 export { initializeDatabase }
+
+
+/** 
+ * 
+ * Usage
+ * 
+    const Item = object({
+        id: number().integer().required(),
+        done: boolean().required(),
+        value: string().required(),
+    })
+
+    type Item = InferType<typeof Item>
+    type SubItem = Pick<Item, "done" | "id">
+    initializeDatabase("test").table("items", Item).columns<SubItem>(["done", "id"]).then(result => console.log(result))
+
+**/
