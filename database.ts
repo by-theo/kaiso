@@ -1,7 +1,7 @@
 import * as SQLite from "expo-sqlite"
 import {
     AnyObjectSchema,
-    InferType,
+    //InferType,
 } from "yup"
 
 type StandardResult = {
@@ -12,7 +12,7 @@ type StandardResult = {
 /**
  * Creates or connects the database of the given name with each schema representing a table.
  *
- * @param {string} name The name of the database. 
+ * @param {string} dbName The name of the database. 
  */
 
 const initializeDatabase = (dbName = "main") => {
