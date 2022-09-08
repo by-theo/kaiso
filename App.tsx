@@ -45,9 +45,9 @@ export default function App() {
 
   const markAsDone = async (item: Item) => {
     try {
-      let result = await itemsTable.update(item.id, item)
-      if (result.status != "success") return
-      result = await itemsTable.select()
+      let update = await itemsTable.update(item.id, item)
+      if (update.status != "success") return
+      let result = await itemsTable.select()
       if (result.status != "success") return
       setItems(result.data as Item[])
     } catch (e) {
