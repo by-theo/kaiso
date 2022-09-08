@@ -7,7 +7,7 @@ import { AnyObjectSchema } from "yup"
  * @param {string} name The name of the database.
  */
 
-const initDatabase = (name = "db") => {
+const initializeDatabase = (name = "db") => {
   function table(name: string, schema: AnyObjectSchema) {
     let command = `CREATE TABLE IF NOT EXISTS ${name} (id INTEGER PRIMARY KEY NOT NULL`
     type SchemaField = keyof typeof schema.fields
@@ -71,7 +71,7 @@ const UserSchema = yup.object({
   email: yup.string().required(),
 })
 
-let database = initDatabase()
+let database = initializeDatabase()
 const users = database.table("users", UserSchema)
 
 users.insert({
