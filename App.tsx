@@ -1,7 +1,7 @@
 import { StatusBar } from "expo-status-bar"
 import {
-  ScrollView,
   FlatList,
+  SectionList,
   StyleSheet,
   Text,
   TextInput,
@@ -58,7 +58,7 @@ const initializeDatabase = (dbName = "main") => {
       command += `, ${key} ${type}`
     })
     command += ");"
-    console.log(command)
+    //console.log(command)
 
     sqlDB.transaction((tx) => {
       tx.executeSql(command)
@@ -135,7 +135,17 @@ const initializeDatabase = (dbName = "main") => {
       })
     }
 
-    const update = (primaryKey: number, value: any) => { }
+    const update = async (id: number, value: any) => {
+      const command = `UPDATE ${tableName} SET done = 1 WHERE id = ?;`
+      return new Promise((resolve) => {
+        sqlDB.transaction((tx) => {
+          tx.executeSql(
+            command,
+            [id],
+            () => resolve({ status: "success", data: value }));
+        })
+      })
+    }
 
     const remove = async (id: number) => {
       const command = `DELETE FROM ${tableName} WHERE id = ?;`
@@ -187,7 +197,17 @@ export default function App() {
     setText("")
   }
 
-  const markAsDone = (id: number) => { }
+  const markAsDone = async (item: Item) => {
+    try {
+      let result = await itemsTable.update(item.id, item)
+      if (result.status != "success") return
+      result = await itemsTable.select()
+      if (result.status != "success") return
+      setItems(result.data as Item[])
+    } catch (e) {
+      console.log("error", e)
+    }
+  }
 
   const deleteItem = async (id: number) => {
     try {
@@ -212,6 +232,19 @@ export default function App() {
       })
   }, [])
 
+  const todo = items.filter(item => !item.done)
+  const done = items.filter(item => item.done)
+  const DATA = [
+    {
+      title: "TODO",
+      data: todo
+    },
+    {
+      title: "DONE",
+      data: done
+    }
+  ];
+
   return (
     <View style={styles.container}>
       <View style={styles.flexRow}>
@@ -223,13 +256,25 @@ export default function App() {
           value={text}
         />
       </View>
-      <FlatList
-        data={items}
+      <SectionList
+        contentContainerStyle={styles.sectionContainer}
+        sections={DATA}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => deleteItem(item.id)} >
+          <TouchableOpacity
+            style={{
+              backgroundColor: item.done ? "#1c9963" : "#fff",
+              borderColor: "#000",
+              borderWidth: 1,
+              padding: 8,
+              marginBottom: 8
+            }}
+            onPress={() => markAsDone(item)} onLongPress={() => deleteItem(item.id)}>
             <Text>{item.value}</Text>
           </TouchableOpacity>
+        )}
+        renderSectionHeader={({ section: { title } }) => (
+          <Text style={styles.sectionHeading}>{title}</Text>
         )}
       />
       <StatusBar style="auto" />
@@ -247,6 +292,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
+    backgroundColor: "#fff",
   },
   flexRow: {
     flexDirection: "row",
@@ -270,7 +316,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   sectionHeading: {
-    fontSize: 18,
-    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: "bold",
+    paddingTop: 12,
+    paddingBottom: 8,
+    marginBottom: 2,
+    backgroundColor: "#fff",
   },
 })
