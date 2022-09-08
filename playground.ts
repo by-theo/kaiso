@@ -4,7 +4,7 @@ import { AnyObjectSchema } from "yup"
 
 const initDatabase = (name = "db") => {
   function table<T>(name: string, schema: AnyObjectSchema) {
-    const insert = (value: T) => { }
+    const insert = (value: T) => { console.log(value) }
     const update = (primaryKey: number, value: any) => { }
     const remove = (primaryKey: number) => { }
 
