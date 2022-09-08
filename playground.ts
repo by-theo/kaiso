@@ -1,22 +1,23 @@
 import * as yup from "yup"
 import { AnyObjectSchema } from "yup"
 
-
 const initDatabase = (name = "db") => {
   function table<T>(name: string, schema: AnyObjectSchema) {
-    const insert = (value: T) => { console.log(value) }
-    const update = (primaryKey: number, value: any) => { }
-    const remove = (primaryKey: number) => { }
+    const insert = (value: T) => {
+      console.log(value)
+    }
+    const update = (primaryKey: number, value: any) => {}
+    const remove = (primaryKey: number) => {}
 
     return {
       insert,
       delete: remove,
-      update
+      update,
     }
   }
 
   return {
-    table
+    table,
   }
 }
 
@@ -40,13 +41,16 @@ const ProductSchema = yup.object({
  * @param {string} name The name of the database.
  */
 
-
 let database = initDatabase()
 type User = yup.InferType<typeof UserSchema>
 const users = database.table<User>("users", UserSchema)
 
-users.insert({ id: 0, firstName: "Theo", lastName: "Taylor", email: "theo@taylord.tech" })
-
+users.insert({
+  id: 0,
+  firstName: "Theo",
+  lastName: "Taylor",
+  email: "theo@taylord.tech",
+})
 
 interface Product extends yup.InferType<typeof ProductSchema> {
   // using interface instead of type generally gives nicer editor feedback
@@ -59,7 +63,7 @@ interface Product extends yup.InferType<typeof ProductSchema> {
 // testing TS stuff for generating a tyoe from object properties
 type SchemaField = keyof typeof ProductSchema.fields
 
-const bat = (a: SchemaField) => { }
+const bat = (a: SchemaField) => {}
 //bat("f")
 
 Object.keys(ProductSchema.fields).forEach((key) => {
