@@ -1,12 +1,10 @@
 import * as yup from "yup"
-import { AnyObjectSchema, AnySchema } from "yup"
+import { AnyObjectSchema } from "yup"
 
 
-const initDatabase = (name = "db", schemas: AnyObjectSchema[]) => {
-  const table = (name: string) => {
-
-
-    const insert = (value: any) => { }
+const initDatabase = (name = "db") => {
+  function table<T>(name: string, schema: AnyObjectSchema) {
+    const insert = (value: T) => { }
     const update = (primaryKey: number, value: any) => { }
     const remove = (primaryKey: number) => { }
 
@@ -40,19 +38,14 @@ const ProductSchema = yup.object({
  * Creates or connects the database of the given name with each schema representing a table.
  *
  * @param {string} name The name of the database.
- * @param {AnySchema[]} schemas The schemas to be mapped to tables.
  */
 
-let database = initDatabase("local", [UserSchema, ProductSchema])
 
-// Adding a row
-database.table("users").insert({ firstName: "Theo", lastName: "Taylor", email: "theo@taylord.tech" })
+let database = initDatabase()
+type User = yup.InferType<typeof UserSchema>
+const users = database.table<User>("users", UserSchema)
 
-// Updating a row
-database.table("users").update(0, { email: "theotaylor@taylord.tech" })
-
-// Deleting a row
-database.table("users").delete(0)
+users.insert({ id: 0, firstName: "Theo", lastName: "Taylor", email: "theo@taylord.tech" })
 
 
 interface Product extends yup.InferType<typeof ProductSchema> {
