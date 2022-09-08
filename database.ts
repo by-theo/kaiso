@@ -4,6 +4,11 @@ import {
     InferType,
 } from "yup"
 
+type StandardResult = {
+    status: "success" | "failure"
+    data: any
+}
+
 /**
  * Creates or connects the database of the given name with each schema representing a table.
  *
@@ -83,7 +88,7 @@ const initializeDatabase = (dbName = "main") => {
             let command = `INSERT INTO ${tableName} (${columnNames}) VALUES (${columnPlaceholders})`
             console.log(command)
 
-            return new Promise((resolve) => {
+            return new Promise<StandardResult>((resolve) => {
                 sqlDB.transaction((tx) => {
                     tx.executeSql(
                         command,
@@ -92,7 +97,7 @@ const initializeDatabase = (dbName = "main") => {
                             resolve({ status: "success", data: value })
                         },
                         () => {
-                            resolve({ status: "failed", data: null })
+                            resolve({ status: "failure", data: null })
                             return false
                         }
                     )
@@ -102,7 +107,7 @@ const initializeDatabase = (dbName = "main") => {
 
         const select = async () => {
             const command = `SELECT * FROM ${tableName};`
-            return new Promise((resolve) => {
+            return new Promise<StandardResult>((resolve) => {
                 sqlDB.transaction((tx) => {
                     tx.executeSql(
                         command,
@@ -111,7 +116,7 @@ const initializeDatabase = (dbName = "main") => {
                             resolve({ status: "success", data: _array })
                         },
                         () => {
-                            resolve({ status: "failed", data: null })
+                            resolve({ status: "failure", data: null })
                             return false
                         }
                     )
@@ -121,7 +126,7 @@ const initializeDatabase = (dbName = "main") => {
 
         const update = async (id: number, value: any) => {
             const command = `UPDATE ${tableName} SET done = 1 WHERE id = ?;`
-            return new Promise((resolve) => {
+            return new Promise<StandardResult>((resolve) => {
                 sqlDB.transaction((tx) => {
                     tx.executeSql(
                         command,
@@ -133,7 +138,7 @@ const initializeDatabase = (dbName = "main") => {
 
         const remove = async (id: number) => {
             const command = `DELETE FROM ${tableName} WHERE id = ?;`
-            return new Promise((resolve) => {
+            return new Promise<StandardResult>((resolve) => {
                 sqlDB.transaction((tx) => {
                     tx.executeSql(command, [id],
                         () => {
