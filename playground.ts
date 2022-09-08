@@ -7,9 +7,9 @@ import { AnyObjectSchema } from "yup"
  * @param {string} name The name of the database.
  */
 
-const initializeDatabase = (name = "db") => {
-  function table(name: string, schema: AnyObjectSchema) {
-    let command = `CREATE TABLE IF NOT EXISTS ${name} (id INTEGER PRIMARY KEY NOT NULL`
+const initializeDatabase = (name = "main") => {
+  function table(tableName: string, schema: AnyObjectSchema) {
+    let command = `CREATE TABLE IF NOT EXISTS ${tableName} (id INTEGER PRIMARY KEY NOT NULL`
     type SchemaField = keyof typeof schema.fields
     Object.keys(schema.fields).forEach((key) => {
       if (key === "id") return
@@ -40,7 +40,7 @@ const initializeDatabase = (name = "db") => {
     command += ");"
     console.log(command)
 
-    type TableType = yup.InferType<typeof UserSchema>
+    type TableType = yup.InferType<typeof schema>
 
     const insert = async (value: TableType) => {
       const valid = await schema.isValid(value)
@@ -49,8 +49,10 @@ const initializeDatabase = (name = "db") => {
       console.log(value)
     }
 
-    const update = (primaryKey: number, value: any) => { }
-    const remove = (primaryKey: number) => { }
+    const update = (primaryKey: number, value: any) => {}
+    const remove = (id: number) => {
+      const command = `DELETE FROM ${tableName} WHERE id = ?;`
+    }
 
     return {
       insert,
