@@ -1,13 +1,56 @@
 import * as yup from "yup"
 import { AnyObjectSchema } from "yup"
 
+/**
+ * Creates or connects the database of the given name with each schema representing a table.
+ *
+ * @param {string} name The name of the database.
+ */
+
 const initDatabase = (name = "db") => {
-  function table<T>(name: string, schema: AnyObjectSchema) {
-    const insert = (value: T) => {
+  function table(name: string, schema: AnyObjectSchema) {
+    let command = `CREATE TABLE IF NOT EXISTS ${name} (id INTEGER PRIMARY KEY NOT NULL`
+    type SchemaField = keyof typeof schema.fields
+    Object.keys(schema.fields).forEach((key) => {
+      if (key === "id") return
+      const field = schema.fields[key as SchemaField]
+      let type = field._type
+
+      switch (type) {
+        case "number":
+          let isInt = false
+          for (let test of field.describe().tests) {
+            if (test.name === "integer") {
+              isInt = true
+              break
+            }
+          }
+          if (isInt) type = "INTEGER"
+          else type = "REAL"
+          break
+        case "string":
+          type = "TEXT"
+          break
+        case "boolean":
+          type = "INTEGER"
+          break
+      }
+      command += `, ${key} ${type}`
+    })
+    command += ");"
+    console.log(command)
+
+    type TableType = yup.InferType<typeof UserSchema>
+
+    const insert = async (value: TableType) => {
+      const valid = await schema.isValid(value)
+      if (!valid) return
+
       console.log(value)
     }
-    const update = (primaryKey: number, value: any) => {}
-    const remove = (primaryKey: number) => {}
+
+    const update = (primaryKey: number, value: any) => { }
+    const remove = (primaryKey: number) => { }
 
     return {
       insert,
@@ -28,69 +71,12 @@ const UserSchema = yup.object({
   email: yup.string().required(),
 })
 
-const ProductSchema = yup.object({
-  id: yup.number().integer().required(),
-  name: yup.string().required(),
-  price: yup.number().integer().required(),
-  available: yup.bool().required(),
-})
-
-/**
- * Creates or connects the database of the given name with each schema representing a table.
- *
- * @param {string} name The name of the database.
- */
-
 let database = initDatabase()
-type User = yup.InferType<typeof UserSchema>
-const users = database.table<User>("users", UserSchema)
+const users = database.table("users", UserSchema)
 
 users.insert({
   id: 0,
   firstName: "Theo",
   lastName: "Taylor",
   email: "theo@taylord.tech",
-})
-
-interface Product extends yup.InferType<typeof ProductSchema> {
-  // using interface instead of type generally gives nicer editor feedback
-}
-// but types can also be written like this
-//type Product = yup.InferType<typeof ProductSchema>
-
-//console.log(Object.keys(ProductSchema.fields))
-
-// testing TS stuff for generating a tyoe from object properties
-type SchemaField = keyof typeof ProductSchema.fields
-
-const bat = (a: SchemaField) => {}
-//bat("f")
-
-Object.keys(ProductSchema.fields).forEach((key) => {
-  //if (key === undefined)
-  const field = ProductSchema.fields[key as SchemaField]
-  let type = field._type
-  //console.log("TS", type)
-
-  switch (type) {
-    case "number":
-      let isInt = false
-      for (let test of field.describe().tests) {
-        if (test.name === "integer") {
-          isInt = true
-          break
-        }
-      }
-      if (isInt) type = "INTEGER"
-      else type = "REAL"
-      break
-    case "string":
-      type = "TEXT"
-      break
-    case "boolean":
-      type = "INTEGER"
-      break
-  }
-
-  //console.log("SQLite", type)
 })
