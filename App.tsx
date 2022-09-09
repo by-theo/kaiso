@@ -23,15 +23,7 @@ const Row: FC<{ text: string; done: boolean; onPress: () => void; onLongPress: (
   return (
     <TouchableOpacity onPress={props.onPress} onLongPress={props.onLongPress}>
       <Animated.View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          borderRadius: 6,
-          paddingVertical: 12,
-          paddingHorizontal: 8,
-          marginBottom: 8,
-          backgroundColor: "#f3f3f3",
-        }}
+        style={styles.row}
         entering={FadeInUp}
         exiting={ZoomOut}
         layout={Layout.delay(200)}
@@ -44,7 +36,15 @@ const Row: FC<{ text: string; done: boolean; onPress: () => void; onLongPress: (
           borderWidth: props.done ? 0 : 3,
           backgroundColor: props.done ? "#63D471" : "transparent",
         }} />
-        <Text style={{ marginLeft: 8, textDecorationLine: props.done ? "line-through" : "none", fontSize: 16 }}>{props.text}</Text>
+        <Text
+          style={{
+            marginLeft: 8,
+            textDecorationLine: props.done ? "line-through" : "none",
+            fontSize: 16,
+            color: "#fff"
+          }}>
+          {props.text}
+        </Text>
       </Animated.View>
     </TouchableOpacity>
   )
@@ -133,7 +133,7 @@ export default function App() {
           onChangeText={(text) => setText(text)}
           onSubmitEditing={add}
           placeholder="Type new task..."
-          placeholderTextColor="#757575"
+          placeholderTextColor="#919191"
           style={styles.input}
           value={text}
         />
@@ -149,14 +149,14 @@ export default function App() {
           <Text style={styles.sectionHeading}>{title} ({count})</Text>
         )}
       />
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#fff",
+    backgroundColor: "#000",
     flex: 1,
     paddingTop: Constants.statusBarHeight,
   },
@@ -164,9 +164,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   input: {
-    borderColor: "#ddd",
+    backgroundColor: "#333",
+    borderColor: "#666",
     borderRadius: 4,
-    borderWidth: 2,
+    borderWidth: 1,
     flex: 1,
     height: 44,
     margin: 16,
@@ -182,6 +183,16 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
     marginBottom: 2,
-    backgroundColor: "#fff",
+    backgroundColor: "#000",
+    color: "#fff"
   },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    marginBottom: 8,
+    backgroundColor: "#333",
+  }
 })
