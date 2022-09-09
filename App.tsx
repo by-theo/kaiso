@@ -133,7 +133,7 @@ export default function App() {
           onChangeText={(text) => setText(text)}
           onSubmitEditing={add}
           placeholder="Type new task..."
-          placeholderTextColor="#919191"
+          placeholderTextColor="#ccc"
           style={styles.input}
           value={text}
         />
@@ -164,6 +164,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   input: {
+    color: "#fff",
     backgroundColor: "#333",
     borderColor: "#666",
     borderRadius: 4,
