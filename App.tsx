@@ -15,8 +15,41 @@ import {
   number,
   boolean,
 } from "yup"
-import { useState, useEffect } from "react"
+import { useState, useEffect, FC } from "react"
+import Animated, { FadeInUp, Layout, ZoomOut } from "react-native-reanimated"
 import { initializeDatabase } from "./database"
+
+const Row: FC<{ text: string; done: boolean; onPress: () => void; onLongPress: () => void }> = (props) => {
+  return (
+    <TouchableOpacity onPress={props.onPress} onLongPress={props.onLongPress}>
+      <Animated.View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          borderRadius: 6,
+          paddingVertical: 12,
+          paddingHorizontal: 8,
+          marginBottom: 8,
+          backgroundColor: "#f3f3f3",
+        }}
+        entering={FadeInUp}
+        exiting={ZoomOut}
+        layout={Layout.delay(200)}
+      >
+        <View style={{
+          height: 24,
+          width: 24,
+          borderRadius: 12,
+          borderColor: "#2191FB",
+          borderWidth: props.done ? 0 : 4,
+          backgroundColor: props.done ? "#63D471" : "transparent",
+        }} />
+        <Text style={{ marginLeft: 8, textDecorationLine: props.done ? "line-through" : "none", fontSize: 16 }}>{props.text}</Text>
+      </Animated.View>
+    </TouchableOpacity>
+  )
+}
+
 
 const Item = object({
   id: number().integer().required(),
@@ -83,11 +116,13 @@ export default function App() {
   const DATA = [
     {
       title: "TODO",
-      data: todo
+      data: todo,
+      count: todo.length
     },
     {
       title: "DONE",
-      data: done
+      data: done,
+      count: done.length
     }
   ];
 
@@ -97,7 +132,8 @@ export default function App() {
         <TextInput
           onChangeText={(text) => setText(text)}
           onSubmitEditing={add}
-          placeholder="what do you need to do?"
+          placeholder="Type new task..."
+          placeholderTextColor="#757575"
           style={styles.input}
           value={text}
         />
@@ -107,20 +143,10 @@ export default function App() {
         sections={DATA}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={{
-              backgroundColor: item.done ? "#1c9963" : "#fff",
-              borderColor: "#000",
-              borderWidth: 1,
-              padding: 8,
-              marginBottom: 8
-            }}
-            onPress={() => markAsDone(item)} onLongPress={() => deleteItem(item.id)}>
-            <Text>{item.value}</Text>
-          </TouchableOpacity>
+          <Row text={item.value} done={item.done} onPress={() => markAsDone(item)} onLongPress={() => deleteItem(item.id)} />
         )}
-        renderSectionHeader={({ section: { title } }) => (
-          <Text style={styles.sectionHeading}>{title}</Text>
+        renderSectionHeader={({ section: { title, count } }) => (
+          <Text style={styles.sectionHeading}>{title} ({count})</Text>
         )}
       />
       <StatusBar style="auto" />
@@ -134,28 +160,17 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: Constants.statusBarHeight,
   },
-  heading: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    backgroundColor: "#fff",
-  },
   flexRow: {
     flexDirection: "row",
   },
   input: {
-    borderColor: "#4630eb",
+    borderColor: "#ddd",
     borderRadius: 4,
-    borderWidth: 1,
+    borderWidth: 2,
     flex: 1,
-    height: 48,
+    height: 44,
     margin: 16,
     padding: 8,
-  },
-  listArea: {
-    backgroundColor: "#f0f0f0",
-    flex: 1,
-    paddingTop: 16,
   },
   sectionContainer: {
     marginBottom: 16,
