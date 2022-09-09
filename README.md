@@ -22,3 +22,8 @@ Example demonstrating use of a proof of concept SQLite wrapper for React Native 
 - All the database related code could be found in __database.ts__  
 - Everything else in __App.tsx__
 - [Expo SQLite docs](https://docs.expo.dev/versions/latest/sdk/sqlite/)
+
+## ⏭ Next
+- Make this into an npm package
+- Relationships
+- Andddd of course, Migrations
