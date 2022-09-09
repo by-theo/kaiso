@@ -41,7 +41,7 @@ const Row: FC<{ text: string; done: boolean; onPress: () => void; onLongPress: (
           width: 24,
           borderRadius: 12,
           borderColor: "#2191FB",
-          borderWidth: props.done ? 0 : 4,
+          borderWidth: props.done ? 0 : 3,
           backgroundColor: props.done ? "#63D471" : "transparent",
         }} />
         <Text style={{ marginLeft: 8, textDecorationLine: props.done ? "line-through" : "none", fontSize: 16 }}>{props.text}</Text>
