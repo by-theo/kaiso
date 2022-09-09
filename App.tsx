@@ -58,18 +58,18 @@ const Item = object({
 })
 
 type Item = InferType<typeof Item>
-
 const itemsTable = initializeDatabase().table("items", Item)
+
 export default function App() {
   const [text, setText] = useState("")
   const [items, setItems] = useState<Item[]>([])
   const add = async () => {
     try {
-      let result = await itemsTable.insert<Item>({ value: text, done: false, id: 0 })
-      if (result.status != "success") return
-      result = await itemsTable.select()
-      if (result.status != "success") return
-      setItems(result.data as Item[])
+      let insert = await itemsTable.insert<Item>({ value: text, done: false, id: 0 })
+      if (insert.status != "success") return
+      let select = await itemsTable.select()
+      if (select.status != "success") return
+      setItems(select.data as Item[])
     } catch (e) {
       console.log("error", e)
     }
@@ -80,9 +80,9 @@ export default function App() {
     try {
       let update = await itemsTable.update(item.id, item)
       if (update.status != "success") return
-      let result = await itemsTable.select()
-      if (result.status != "success") return
-      setItems(result.data as Item[])
+      let select = await itemsTable.select()
+      if (select.status != "success") return
+      setItems(select.data as Item[])
     } catch (e) {
       console.log("error", e)
     }
@@ -90,11 +90,11 @@ export default function App() {
 
   const deleteItem = async (id: number) => {
     try {
-      let result = await itemsTable.delete(id)
-      if (result.status != "success") return
-      result = await itemsTable.select()
-      if (result.status != "success") return
-      setItems(result.data as Item[])
+      let deletion = await itemsTable.delete(id)
+      if (deletion.status != "success") return
+      let select = await itemsTable.select()
+      if (select.status != "success") return
+      setItems(select.data as Item[])
     } catch (e) {
       console.log("error", e)
     }

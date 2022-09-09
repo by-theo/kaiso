@@ -5,11 +5,6 @@ import {
 
 type Status = "success" | "failure"
 
-type StandardResult = {
-    status: "success" | "failure"
-    data: any
-}
-
 /**
  * Creates or connects the database of the given name with each schema representing a table.
  *
@@ -48,7 +43,6 @@ const initializeDatabase = (dbName = "main") => {
             command += `, ${key} ${type}`
         })
         command += ");"
-        console.log(command)
 
         sqlDB.transaction((tx) => {
             tx.executeSql(command)
@@ -79,7 +73,7 @@ const initializeDatabase = (dbName = "main") => {
 
             let command = `INSERT INTO ${tableName} (${columnNames}) VALUES (${columnPlaceholders})`
 
-            return new Promise<StandardResult>((resolve) => {
+            return new Promise<{ status: Status, data: T | null }>((resolve) => {
                 sqlDB.transaction((tx) => {
                     tx.executeSql(
                         command,
@@ -98,7 +92,7 @@ const initializeDatabase = (dbName = "main") => {
 
         const select = async <T>() => {
             const command = `SELECT * FROM ${tableName};`
-            return new Promise<StandardResult>((resolve) => {
+            return new Promise<{ status: Status, data: T[] | null }>((resolve) => {
                 sqlDB.transaction((tx) => {
                     tx.executeSql(
                         command,
@@ -121,8 +115,7 @@ const initializeDatabase = (dbName = "main") => {
                 columnStr += index === 0 ? column.toString() : `, ${column.toString()}`
             })
             const command = `SELECT ${columnStr} FROM ${tableName};`
-            return new Promise<StandardResult>((resolve) => {
-                resolve({ data: { done: false }, status: "success" })
+            return new Promise<{ status: Status, data: T[] | null }>((resolve) => {
                 sqlDB.transaction((tx) => {
                     tx.executeSql(
                         command,
@@ -153,12 +146,16 @@ const initializeDatabase = (dbName = "main") => {
 
         const remove = async (id: number) => {
             const command = `DELETE FROM ${tableName} WHERE id = ?;`
-            return new Promise<StandardResult>((resolve) => {
+            return new Promise<{ status: Status, data: null }>((resolve) => {
                 sqlDB.transaction((tx) => {
                     tx.executeSql(command, [id],
                         () => {
                             resolve({ status: "success", data: null })
-                        },)
+                        },
+                        () => {
+                            resolve({ status: "failure", data: null })
+                            return false
+                        })
                 })
             })
         }
