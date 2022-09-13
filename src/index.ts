@@ -1,14 +1,12 @@
 //import * as SQLite from "expo-sqlite"
-import {
-  AnyObjectSchema
-} from "yup"
+import { AnyObjectSchema } from "yup"
 
 type Status = "success" | "failure"
 
 /**
  * Creates or connects the database of the given name with each schema representing a table.
  *
- * @param {string} dbName The name of the database. 
+ * @param {string} dbName The name of the database.
  */
 
 const initializeDatabase = (dbName = "main") => {
@@ -51,7 +49,8 @@ const initializeDatabase = (dbName = "main") => {
     const insert = async <T extends {}>(value: T) => {
       const valid = await schema.isValid(value)
 
-      if (!valid) throw Error(`${JSON.stringify(value)} is not of the correcttype`)
+      if (!valid)
+        throw Error(`${JSON.stringify(value)} is not of the correct type`)
 
       function checkForID(column: string) {
         return column === "id"
@@ -73,7 +72,7 @@ const initializeDatabase = (dbName = "main") => {
 
       let command = `INSERT INTO ${tableName} (${columnNames}) VALUES (${columnPlaceholders})`
 
-      return new Promise<{ status: Status, data: T | null }>((resolve) => {
+      return new Promise<{ status: Status; data: T | null }>((resolve) => {
         // sqlDB.transaction((tx) => {
         //   tx.executeSql(
         //     command,
@@ -92,7 +91,7 @@ const initializeDatabase = (dbName = "main") => {
 
     const select = async <T>() => {
       const command = `SELECT * FROM ${tableName};`
-      return new Promise<{ status: Status, data: T[] | null }>((resolve) => {
+      return new Promise<{ status: Status; data: T[] | null }>((resolve) => {
         // sqlDB.transaction((tx) => {
         //   tx.executeSql(
         //     command,
@@ -115,7 +114,7 @@ const initializeDatabase = (dbName = "main") => {
         columnStr += index === 0 ? column.toString() : `, ${column.toString()}`
       })
       const command = `SELECT ${columnStr} FROM ${tableName};`
-      return new Promise<{ status: Status, data: T[] | null }>((resolve) => {
+      return new Promise<{ status: Status; data: T[] | null }>((resolve) => {
         // sqlDB.transaction((tx) => {
         //   tx.executeSql(
         //     command,
@@ -134,7 +133,7 @@ const initializeDatabase = (dbName = "main") => {
 
     const update = async <T>(id: number, value: T) => {
       const command = `UPDATE ${tableName} SET done = 1 WHERE id = ?;`
-      return new Promise<{ status: Status, data: T }>((resolve) => {
+      return new Promise<{ status: Status; data: T }>((resolve) => {
         // sqlDB.transaction((tx) => {
         //   tx.executeSql(
         //     command,
@@ -146,7 +145,7 @@ const initializeDatabase = (dbName = "main") => {
 
     const remove = async (id: number) => {
       const command = `DELETE FROM ${tableName} WHERE id = ?;`
-      return new Promise<{ status: Status, data: null }>((resolve) => {
+      return new Promise<{ status: Status; data: null }>((resolve) => {
         // sqlDB.transaction((tx) => {
         //   tx.executeSql(command, [id],
         //     () => {
@@ -169,27 +168,53 @@ const initializeDatabase = (dbName = "main") => {
     }
   }
 
+  const execute = async <T>(command: string) => {
+    return new Promise<{ status: Status; data: T | null }>((resolve) => {
+      // sqlDB.transaction((tx) => {
+      //   tx.executeSql(
+      //     command,
+      //     []
+      //     () => {
+      //       resolve({ status: "success", data: value })
+      //     },
+      //     () => {
+      //       resolve({ status: "failure", data: null })
+      //       return false
+      //     }
+      //   )
+      // })
+    })
+  }
+
   return {
+    execute,
     table,
   }
 }
 
-
 export { initializeDatabase }
+/*
+import { array, boolean, number, object, string, InferType } from "yup"
 
+const SubTask = object({
+  id: number().integer().required(),
+  done: boolean().required(),
+  value: string().required(),
+})
 
-/** 
- * 
- * Usage
- * 
-    const Item = object({
-        id: number().integer().required(),
-        done: boolean().required(),
-        value: string().required(),
-    })
+const Task = object({
+  id: number().integer().required(),
+  done: boolean().required(),
+  value: string().required(),
+  subtasks: array(SubTask),
+})
 
-    type Item = InferType<typeof Item>
-    type SubItem = Pick<Item, "done" | "id">
-    initializeDatabase("test").table("items", Item).columns<SubItem>(["done", "id"]).then(result => console.log(result))
+console.log(Task.fields.subtasks._type)
 
-**/
+type Task = InferType<typeof Task>
+type SubItem = Pick<Task, "done" | "id">
+initializeDatabase("test")
+  .table("tasks", Task)
+  .columns<SubItem>(["done", "id"])
+  .then((result) => console.log(result))
+*/
