@@ -196,7 +196,7 @@ const Post = object({
   content: string(),
 })
 
-console.log(Post.fields.author.describe().meta.relations.table);
+//console.log(Post.fields.author.describe().meta.relations.table);
 
 
 
